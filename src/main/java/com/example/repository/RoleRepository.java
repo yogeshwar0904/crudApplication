@@ -1,12 +1,13 @@
 package com.example.repository;
 
-import com.example.model.Customer;
+import com.example.model.Role;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Qualifier("customers")
+import java.util.Optional;
+@Qualifier("roles")
 @Repository
-public interface CustomerRepository extends JpaRepository <Customer, Long> {
-    Customer findByName(String name);
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Role findByName(String name);
 }

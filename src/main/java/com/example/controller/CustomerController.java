@@ -21,8 +21,19 @@ public class CustomerController {
 
     @PostMapping
     public String crateCustomer(@RequestBody Customer customer) {
-        customerService.saveCustomer(customer);
-        return "Customer created";
+        String profileCreatedStatus;
+        if(customerService.isCustomerExist(customer.getName())){
+            profileCreatedStatus = "Oops Customer already Exist";
+        } else {
+            customerService.saveCustomer(customer);
+            profileCreatedStatus = "Customer created";
+        }
+        return profileCreatedStatus;
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody Customer loginRequest){
+       return customerService.login(loginRequest);
     }
 
     @GetMapping("/{id}")

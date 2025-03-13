@@ -1,18 +1,20 @@
 package com.example.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 
 public class Customer {
 
     @Id
-
      public Long id;
      public String name;
      public Long phoneNumber;
      public String scheme;
+     public String password;
 
      public Long getID() {
          return id;
@@ -37,8 +39,27 @@ public class Customer {
          this.phoneNumber = phoneNumber;
     }
 
+    public String getPassword(){
+         return password;
+    }
+
+    public void setPassword(String password){
+         this.password = password;
+    }
+
      @Override
      public String toString() {
         return " "+id+" "+name+" "+ phoneNumber+" "+ scheme;
+     }
+
+     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+     private Set<Role> roles = new HashSet<>();
+
+     public  Set<Role> getRoles(){
+         return  roles;
+     };
+
+     public void setRoles(Set<Role> roles){
+         this.roles = roles;
      }
 }

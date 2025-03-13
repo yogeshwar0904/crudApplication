@@ -4,24 +4,41 @@ import com.example.mapper.CustomerDTOMapper;
 import com.example.model.Customer;
 import com.example.model.CustomerDTO;
 import com.example.repository.CustomerRepository;
+import com.example.security.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CustomerServiceImpl implements CustomerService {
+public class CustomerServiceImpl implements CustomerService, UserDetailsService {
     @Autowired
     private final CustomerRepository customerRepository;
 
     @Autowired
     private final CustomerDTOMapper customerDTOMapper;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerDTOMapper customerDTOMapper) {
+    @Autowired
+    private final AuthenticationManager authenticationManager;
+
+    @Autowired
+    private final JWTUtil jwtUtil;
+
+
+    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerDTOMapper customerDTOMapper, AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
         this.customerRepository = customerRepository;
         this.customerDTOMapper = customerDTOMapper;
-
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -96,6 +113,33 @@ public class CustomerServiceImpl implements CustomerService {
         }
         return deleteMessage;
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Customer customer = customerRepository.findByName(username);
+        return new org.springframework.security.core.
+                userdetails.User(customer.getName(), customer.getPassword(), customer.getRoles().stream().map(role ->
+                new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList()));
+    }
+    @Override
+    public boolean isCustomerExist(String name){
+        boolean isPresent;
+        if(customerRepository.findByName(name).getName().equals(name)){
+            isPresent = true;
+        } else {
+            isPresent = false;
+        }
+        return isPresent;
+    };
+
+    @Override
+    public  String login( Customer loginRequest){
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getName(), loginRequest.getPassword()));
+        String token = jwtUtil.generateToken(loginRequest.getName());
+        return token;
+    }
+
+
 }
 
 
